@@ -1,5 +1,6 @@
 from datetime import timedelta, date, datetime;
 from pathlib import Path;
+from collections import namedtuple;
 
 from nicegui import ui, app;
 
@@ -13,11 +14,31 @@ while True:
     _i += 1;
 MAX_WEEK = _i;
 
+WindowSize = namedtuple('WindowSize', ['width', 'height']);
+
 
 
 def main():
-
     today = date.today();
+
+    if today >= SEMESTER_END_DATE:
+        window_size = _ood();
+    else:
+        window_size = _ind();
+
+    app.native.window_args['resizable'] = False;
+    ui.run(
+        reload=False,
+        dark=True,
+        native=True,
+        window_size=window_size,
+    );
+
+
+
+def _ind() -> WindowSize:
+    today = date.today();
+
     d_day = (today-SEMESTER_START_WEEK_MONDAY).days;
     week  = (d_day//7)+1;
 
@@ -41,7 +62,7 @@ def main():
         ui.timeline_entry(
             '',
             title=f'{odd_or_even}',
-            subtitle=f'Week {i} (This week)',
+            subtitle=f'Week {i} ({today})',
             color='blue-400',
             icon='add_task',
         );
@@ -59,13 +80,35 @@ def main():
             color='green-900',
         );
 
-    app.native.window_args['resizable'] = False;
-    ui.run(
-        reload=False,
-        dark=True,
-        native=True,
-        window_size=(320, 880),
-    );
+    return WindowSize(320, 880);
+
+def _ood() -> WindowSize:
+    today = date.today();
+
+    with ui.timeline(side='right'):
+        ui.timeline_entry(
+            '',
+            subtitle=f'Week 1 ({SEMESTER_START_DATE})',
+            color='gray-700',
+        );
+
+        ui.timeline_entry(
+            '',
+            subtitle=f'Week {MAX_WEEK} ({SEMESTER_END_DATE})',
+            color='gray-700',
+        );
+
+        ui.timeline_entry(
+            '',
+            title='End of Semester',
+            subtitle=f'{today}',
+            color='blue-400',
+            icon='add_task',
+        );
+
+    return WindowSize(320, 320);
+
+
 
 if __name__ in {"__main__", "__mp_main__"}:
     main()
